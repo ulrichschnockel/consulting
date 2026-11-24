@@ -14,4 +14,4 @@ Im Canvas einen Artboard wählen und **Play** drücken, um zu klicken. Navigatio
 | 5 | Mobil: Heute | Kompakte Tagesansicht mit nächstem Rückruf und Direktwahl | 5.11 |
 | 6 | Mein Tag & Kalender | Tagesablauf aus Terminen, Rückrufen und freien Lücken mit Vorschlägen, Konflikt-Hinweis, Termin-Briefing je Kundentermin, Terminwünsche aus Mails mit Ein-Klick-Eintrag | 5.13 |
 
-Alle Namen, Firmen und Nummern in den Mockups sind frei erfunden.
+Alle Namen, Firmen und Nummern in den Mockups sind frei erfunden. Die fiktive „Weserland Versicherung“ steht als Platzhalter für den Versicherer der Agentur (SIGNAL IDUNA); echte Absender, Nummern und Systeme des Versicherers werden bewusst nicht nachgebildet.

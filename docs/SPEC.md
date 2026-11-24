@@ -1,6 +1,8 @@
 # Mail-Cockpit für Versicherungsagenturen – Spezifikation
 
-Version 0.2 (Entwurf zur Abstimmung) · Stand 24.11.2026
+Version 0.3 (Entwurf zur Abstimmung) · Stand 24.11.2026
+
+Änderungen gegenüber 0.2: Rahmenbedingung Ausschließlichkeitsagentur der SIGNAL IDUNA (Abschnitt 2), Freigabe durch den Versicherer als Voraussetzung (neuer Abschnitt 7.1), Kategorien für Anträge und Leistungsfälle.
 
 Änderungen gegenüber 0.1: Entscheidung für KI-Verarbeitung in einer EU-Cloud (neuer Abschnitt 8), Kalender-Anbindung (neuer Abschnitt 5.13, Mockup 6), Vorgangszuordnung ohne separate Ähnlichkeitssuche.
 
@@ -21,6 +23,13 @@ Ein Dashboard, das das Postfach eines Versicherungsvertrieblers automatisch lies
 | Rückrufbitten stehen irgendwo im Fließtext („bitte melden Sie sich heute ab 17 Uhr“) | Rückrufe werden vergessen oder zu spät erledigt |
 | Fristen (Mahnstufen, Kündigungstermine, Kostenzusagen, Fahrzeugwechsel) sind in Mails versteckt | Gefahr von Deckungslücken und Kundenverlust |
 | Vertriebler ist oft unterwegs | Er braucht eine kompakte mobile Sicht „Was brennt?“ |
+
+### Rahmenbedingung: Ausschließlichkeitsagentur der SIGNAL IDUNA
+Die Agentur vermittelt ausschließlich Produkte der SIGNAL IDUNA Gruppe. Folgen für das Tool:
+- **Ein Versicherer:** Versicherer-Post kommt von bekannten Absendern und Systemen der SIGNAL IDUNA und ist oft gleich aufgebaut. Vertrags- und Schadennummern lassen sich daher per Regel zuverlässig erkennen. Die Nummernformate werden aus echten Mails abgeleitet, nicht vorab angenommen.
+- **Spartenmix:** Bei der SIGNAL IDUNA haben Kranken- und Lebensversicherung sowie Handwerk und Gewerbe traditionell großes Gewicht. Gesundheitsdaten kommen deshalb häufig vor; Kategorien (5.3) und Datenschutz (7) sind darauf ausgelegt. Der tatsächliche Spartenmix der Agentur wird noch abgefragt.
+- **Kein Vergleich zwischen Versicherern:** „Angebot“ heißt hier, ein Angebot der SIGNAL IDUNA zu erstellen.
+- **IT-Vorgaben des Versicherers:** Versicherer stellen ihren Ausschließlichkeitsvertretern üblicherweise Agentursoftware und IT bereit, teils auch Mailpostfächer, und regeln IT-Sicherheit und Datenschutz im Vertretervertrag. Ob und wie ein eigenes Tool angebunden werden darf, muss deshalb **vor Umsetzungsstart** mit der SIGNAL IDUNA geklärt werden (Abschnitt 7.1).
 
 ## 3. Nutzer
 
@@ -73,6 +82,8 @@ Jeder extrahierte Fakt speichert seine **Quelle** (Mail + Textstelle), damit er 
 | Beschwerde | Unzufriedenheit, Eskalation |
 | Beitrag / Mahnung | Lastschriftrückgabe, Mahnstufen, Beitragsanpassung |
 | Versicherer-Post | Policen, Nachträge, Provisionsabrechnung, Rundschreiben |
+| Antrag / Police | Antragsstatus, Nachforderung von Unterlagen oder Gesundheitsangaben, Policierung |
+| Leistungsfall (Kranken, BU, Unfall, Leben) | Erstattungsfragen, Leistungsantrag, Rückfragen zur Leistung; Gesundheitsdaten, siehe 7 |
 | Termin | Terminvorschläge, -bestätigungen |
 | Info / Newsletter | ohne Handlungsbedarf |
 | Spam / Sonstiges | |
@@ -110,7 +121,7 @@ Bausteine (Startwerte, im Bereich „Regeln“ in Klartext einsehbar und per Sch
 
 | Faktor | Punkte |
 |---|---|
-| Basis nach Kategorie (Schaden neu 45, Beschwerde 45, Kündigung 40, Rückruf 35, Mahnung 35, Vertragsänderung 25, Angebot 25, Versicherer-Post 10, Info 0) | 0–45 |
+| Basis nach Kategorie (Schaden neu 45, Beschwerde 45, Kündigung 40, Leistungsfall 40, Rückruf 35, Antrag 30, Mahnung 35, Vertragsänderung 25, Angebot 25, Versicherer-Post 10, Info 0) | 0–45 |
 | Frist heute / morgen / ≤ 7 Tage | +30 / +20 / +10 |
 | Eskalationssignal (Kündigungsandrohung, Anwalt, Verärgerung) | +20 |
 | Wiederholte Nachfrage des Kunden | +10 je Nachfrage, max. +20 |
@@ -167,7 +178,7 @@ Regeln:
 
 ## 6. Nicht im MVP
 - Automatischer Versand ohne Freigabe
-- Anbindung an Agenturverwaltungs-/Maklerverwaltungsprogramm und BiPRO-Normen (Phase 3, Schnittstelle vorbereitet)
+- Anbindung an das Agentursystem der SIGNAL IDUNA (Phase 3, nur wenn der Versicherer eine Schnittstelle anbietet und freigibt)
 - Mehrbenutzer mit Rollen (Phase 2)
 - Telefonie-Integration (Anrufe protokollieren)
 - Eigene native Apps
@@ -180,6 +191,17 @@ Mails enthalten personenbezogene Daten, teils besondere Kategorien nach Art. 9 D
 - Zugriff nur per Microsoft-Login mit 2FA; Audit-Log aller Aktionen.
 - Option „Gesundheitsdaten maskieren“: Sparten Kranken/BU/Unfall werden nur kategorisiert, nicht inhaltlich zusammengefasst.
 - Rechtliche Prüfung (DSGVO, ggf. § 203 StGB, Vorgaben des Versicherers an seine Vertreter) vor Produktivbetrieb.
+
+### 7.1 Freigabe durch die SIGNAL IDUNA (Voraussetzung vor Umsetzungsstart)
+| Zu klären | Warum entscheidend |
+|---|---|
+| Liegt das Postfach (und der Kalender) bei der Agentur selbst, z. B. eigene Domain, oder im Microsoft-Konto der SIGNAL IDUNA? | Im zweiten Fall muss die IT der SIGNAL IDUNA den Zugriff der App freigeben (Administrator-Zustimmung). Die Agentur kann das nicht allein. |
+| Dürfen Mail- und Kundendaten an einen eigenen Dienstleister und eine EU-Cloud gehen? | Datenschutzrechtliche Rollen (Verantwortlicher, Auftragsverarbeitung), Vorgaben im Vertretervertrag, ggf. § 203 StGB bei Kranken, Leben, Unfall. |
+| Gibt es Vorgaben zu KI-Diensten (zugelassene Anbieter, Regionen)? | Kann die Anbieterwahl in 8.2 festlegen. |
+| Bietet die SIGNAL IDUNA selbst schon passende Funktionen (Aufgaben, Postkorb, Schadenstatus im Agentursystem) oder Schnittstellen? | Doppelte Arbeit vermeiden; Daten ggf. von dort statt aus Mails beziehen. |
+| Darf ein Kundenstamm aus dem Agentursystem exportiert und im Tool genutzt werden? | Verbessert die Zuordnung deutlich (5.4). |
+
+Eine automatische Weiterleitung der Mails an ein externes Postfach ist kein Ausweg, wenn sie den Vorgaben des Versicherers widerspricht. Wird die Anbindung nicht freigegeben, sind die Alternativen: nur eigene Postfächer der Agentur einbinden (falls vorhanden), das Tool in einer vom Versicherer freigegebenen Umgebung betreiben, oder das Projekt nicht umsetzen.
 
 ## 8. KI-Modell und Datenverarbeitung
 
@@ -200,7 +222,7 @@ Feste Regeln erledigen alles Eindeutige, günstig und nachvollziehbar. Das Sprac
 Fällt das Sprachmodell aus, laufen Sync und Regeln weiter; betroffene Mails werden nachträglich analysiert.
 
 ### 8.2 Anbieter und Modell
-- **Modell:** Claude (Anthropic), bezogen über **Google Cloud Vertex AI (Region EU)** oder **Amazon Bedrock (EU-Region, z. B. Frankfurt)**. Die Wahl zwischen beiden richtet sich danach, welches Modell dort in der EU-Region verfügbar ist, nach den AVV-Konditionen und danach, ob die Agentur einen der Anbieter schon nutzt.
+- **Modell:** Claude (Anthropic), bezogen über **Google Cloud Vertex AI (Region EU)** oder **Amazon Bedrock (EU-Region, z. B. Frankfurt)**. Die Wahl zwischen beiden richtet sich danach, welches Modell dort in der EU-Region verfügbar ist, nach den AVV-Konditionen danach, ob die Agentur einen der Anbieter schon nutzt, und nach etwaigen Vorgaben der SIGNAL IDUNA (7.1).
 - **Nicht direkt über die Anthropic-API:** Dort ist als Verarbeitungsort nur „global“ oder „USA“ wählbar, keine EU (Stand 11/2026).
 - **Modellgröße wird gemessen, nicht geschätzt:** Mit dem Testkorpus aus Abschnitt 11 (300 anonymisierte Agenturmails) laufen Claude Haiku 5.5, Sonnet 5.5 und Opus 5.5 gegeneinander. Genommen wird das günstigste Modell, das die Abnahmekriterien erfüllt. Möglich ist auch eine Aufteilung: ein kleines Modell für die Analyse jeder Mail und ein größeres für Antwortentwürfe und knifflige Zuordnungen.
 - **Kein Training, keine Feinabstimmung:** Kategorien, Regeln und Beispiele stehen im Prompt. Korrekturen des Nutzers fließen als Beispiele in künftige Prompts ein.
@@ -241,10 +263,10 @@ Dazu kommen ein Aufschlag für interne Denkschritte des Modells und für lange P
 ## 10. Umsetzung in Phasen
 | Phase | Inhalt | Ergebnis |
 |---|---|---|
-| 0 – Klickdummy (diese Mockups) | Abstimmung Layout und Begriffe | freigegebenes Design |
+| 0 – Klärung und Klickdummy | Freigabe durch die SIGNAL IDUNA (7.1), Abstimmung von Layout und Begriffen anhand der Mockups | Freigabe und abgestimmtes Design |
 | 1 – MVP (ca. 7–9 Wochen) | M365-Anbindung (Mail und Kalender), Analyse, Vorgangsbildung, Priorisierung, Dashboard mit „Mein Tag“, Vorgangsansicht, Zuordnung prüfen, Rückrufe, Termine aus Mails, Termin-Briefing | produktiv für einen Nutzer |
 | 2 | Antwortentwürfe ins Postfach, Mobile/PWA-Feinschliff, Tagesbriefing, Rückrufe automatisch einplanen, Fristen im Kalender, Fahrzeiten, Innendienst-Zugang | Team-Nutzung |
-| 3 | Kundenstamm-Import, Agentursoftware-Schnittstelle, Auswertungen | Integration |
+| 3 | Kundenstamm-Import, Schnittstelle zum Agentursystem der SIGNAL IDUNA (falls angeboten und freigegeben), Auswertungen | Integration |
 
 ## 11. Abnahmekriterien MVP
 1. Neue Mails erscheinen spätestens 2 Minuten nach Eingang analysiert im Dashboard.
@@ -261,11 +283,12 @@ Dazu kommen ein Aufschlag für interne Denkschritte des Modells und für lange P
 1. Welches Mailsystem wird genutzt (Microsoft 365, Exchange on-premises, anderer Anbieter)?
 2. Wie viele Mails pro Tag, und gibt es neben dem persönlichen Postfach ein Sammelpostfach (z. B. schaden@)?
 3. Welche Sparten machen den Großteil aus (Privat Kfz/Sach vs. Leben/Kranken vs. Gewerbe)?
-4. Ausschließlichkeitsvertreter oder Makler? (Anzahl Versicherer, Vorgaben zu IT und Datenschutz)
-5. Lässt sich ein Kundenstamm (Name, Mail, Telefon, Vertragsnummern) aus der Agentursoftware exportieren?
+4. Hat die Agentur eine eigene Mail-Domain, oder läuft das Postfach über die SIGNAL IDUNA? (siehe 7.1)
+5. Lässt sich ein Kundenstamm (Name, Mail, Telefon, Vertragsnummern) aus dem Agentursystem der SIGNAL IDUNA exportieren, und ist das erlaubt?
 6. Wird bereits Google Cloud oder AWS genutzt? Das entscheidet den Anbieter für Hosting und KI in der EU (entschieden ist: EU-Cloud).
 7. Soll die App Antworten selbst versenden oder nur Entwürfe in Outlook ablegen?
 8. Nutzt künftig auch Innendienst/Assistenz das Tool?
 9. Gibt es feste Fristen/Abläufe, die als Regeln abgebildet werden sollen (z. B. Schadenmeldung binnen 24 h an Versicherer)?
 10. Wird der Outlook-Kalender genutzt, und pflegt jemand anderes (z. B. Innendienst) Termine mit ein?
 11. Gibt es feste Zeiten für Rückrufe oder Bürotage, die bei der Einplanung beachtet werden sollen?
+12. Wer ist bei der SIGNAL IDUNA Ansprechpartner für die Freigabe (z. B. Bezirksdirektion, IT-Sicherheit, Datenschutzbeauftragter)?
