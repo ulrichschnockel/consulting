@@ -1,6 +1,8 @@
 # Mail-Cockpit für Versicherungsagenturen – Spezifikation
 
-Version 0.3 (Entwurf zur Abstimmung) · Stand 24.11.2026
+Version 0.4 (Entwurf zur Abstimmung) · Stand 24.11.2026
+
+Änderungen gegenüber 0.3: Postfach und Kalender liegen bei der SIGNAL IDUNA. Anbindung mit minimalen, delegierten Berechtigungen ohne Sendeberechtigung (7.1), Antworten nur als Entwurf, Freigabeantrag als erster Schritt (Entwurf: `docs/ANFRAGE-SIGNAL-IDUNA.md`).
 
 Änderungen gegenüber 0.2: Rahmenbedingung Ausschließlichkeitsagentur der SIGNAL IDUNA (Abschnitt 2), Freigabe durch den Versicherer als Voraussetzung (neuer Abschnitt 7.1), Kategorien für Anträge und Leistungsfälle.
 
@@ -30,6 +32,7 @@ Die Agentur vermittelt ausschließlich Produkte der SIGNAL IDUNA Gruppe. Folgen 
 - **Spartenmix:** Bei der SIGNAL IDUNA haben Kranken- und Lebensversicherung sowie Handwerk und Gewerbe traditionell großes Gewicht. Gesundheitsdaten kommen deshalb häufig vor; Kategorien (5.3) und Datenschutz (7) sind darauf ausgelegt. Der tatsächliche Spartenmix der Agentur wird noch abgefragt.
 - **Kein Vergleich zwischen Versicherern:** „Angebot“ heißt hier, ein Angebot der SIGNAL IDUNA zu erstellen.
 - **IT-Vorgaben des Versicherers:** Versicherer stellen ihren Ausschließlichkeitsvertretern üblicherweise Agentursoftware und IT bereit, teils auch Mailpostfächer, und regeln IT-Sicherheit und Datenschutz im Vertretervertrag. Ob und wie ein eigenes Tool angebunden werden darf, muss deshalb **vor Umsetzungsstart** mit der SIGNAL IDUNA geklärt werden (Abschnitt 7.1).
+- **Postfach und Kalender liegen bei der SIGNAL IDUNA** (bestätigt am 24.11.2026). Ohne Freigabe durch die IT der SIGNAL IDUNA kann das Tool nicht auf Mails und Termine zugreifen.
 
 ## 3. Nutzer
 
@@ -48,7 +51,7 @@ Die Agentur vermittelt ausschließlich Produkte der SIGNAL IDUNA Gruppe. Folgen 
 ## 5. Funktionsumfang
 
 ### 5.1 Postfach-Anbindung
-- Microsoft 365 / Exchange Online über Microsoft Graph (OAuth, nur Lesen + Entwürfe anlegen). Alternativ IMAP/SMTP für andere Anbieter.
+- Microsoft 365 / Exchange Online der SIGNAL IDUNA über Microsoft Graph, mit den minimalen Berechtigungen aus 7.1: Mails lesen und Entwürfe anlegen, **keine Sendeberechtigung**.
 - Erstimport der letzten 30 Tage, danach laufende Synchronisation (Push/Delta, max. 2 Minuten Verzögerung).
 - Anhänge werden erfasst (Typ, Name, Größe); PDF- und Bildtexte werden für die Analyse ausgelesen (OCR bei Scans).
 - Gesendete Mails des Nutzers werden mitgelesen, damit Vorgänge wissen, ob bereits geantwortet wurde.
@@ -146,7 +149,7 @@ Die Gründe werden als Chips am Vorgang angezeigt („Warum kritisch?“). Der N
 - Aktionsleiste: Antwort entwerfen · An Versicherer weiterleiten · Rückruf planen · Wiedervorlage · Erledigt · Zusammenführen/Trennen.
 - Faktenkarte mit Quellenverweis je Wert, Unterlagen-Checkliste.
 - Zeitleiste aller Mails und Ereignisse (eigene Antworten, Statuswechsel), je Mail KI-Kurzfassung, Original aufklappbar, Anhänge.
-- KI-Antwortentwurf (Kunde oder Versicherer), editierbar, wird als **Entwurf im Postfach** abgelegt bzw. nach Klick auf „Senden“ verschickt.
+- KI-Antwortentwurf (Kunde oder Versicherer), editierbar, wird als **Entwurf im Postfach** abgelegt und vom Nutzer in Outlook geprüft und abgeschickt. Das Tool selbst kann technisch nicht senden.
 
 ### 5.9 Zuordnung prüfen – siehe Mockup 3
 Liste der unsicher zugeordneten Mails mit Vorschlag, Sicherheit, Begründung und Alternativen. Ein Klick: übernehmen, anderen Vorgang wählen, neuen Vorgang anlegen, Absenderadresse dauerhaft einem Kunden zuordnen.
@@ -195,13 +198,29 @@ Mails enthalten personenbezogene Daten, teils besondere Kategorien nach Art. 9 D
 ### 7.1 Freigabe durch die SIGNAL IDUNA (Voraussetzung vor Umsetzungsstart)
 | Zu klären | Warum entscheidend |
 |---|---|
-| Liegt das Postfach (und der Kalender) bei der Agentur selbst, z. B. eigene Domain, oder im Microsoft-Konto der SIGNAL IDUNA? | Im zweiten Fall muss die IT der SIGNAL IDUNA den Zugriff der App freigeben (Administrator-Zustimmung). Die Agentur kann das nicht allein. |
+| ~~Liegt das Postfach (und der Kalender) bei der Agentur selbst oder bei der SIGNAL IDUNA?~~ **Geklärt: bei der SIGNAL IDUNA.** | Die IT der SIGNAL IDUNA muss den Zugriff der App freigeben (Administrator-Zustimmung). Die Agentur kann das nicht allein. |
 | Dürfen Mail- und Kundendaten an einen eigenen Dienstleister und eine EU-Cloud gehen? | Datenschutzrechtliche Rollen (Verantwortlicher, Auftragsverarbeitung), Vorgaben im Vertretervertrag, ggf. § 203 StGB bei Kranken, Leben, Unfall. |
 | Gibt es Vorgaben zu KI-Diensten (zugelassene Anbieter, Regionen)? | Kann die Anbieterwahl in 8.2 festlegen. |
 | Bietet die SIGNAL IDUNA selbst schon passende Funktionen (Aufgaben, Postkorb, Schadenstatus im Agentursystem) oder Schnittstellen? | Doppelte Arbeit vermeiden; Daten ggf. von dort statt aus Mails beziehen. |
 | Darf ein Kundenstamm aus dem Agentursystem exportiert und im Tool genutzt werden? | Verbessert die Zuordnung deutlich (5.4). |
 
-Eine automatische Weiterleitung der Mails an ein externes Postfach ist kein Ausweg, wenn sie den Vorgaben des Versicherers widerspricht. Wird die Anbindung nicht freigegeben, sind die Alternativen: nur eigene Postfächer der Agentur einbinden (falls vorhanden), das Tool in einer vom Versicherer freigegebenen Umgebung betreiben, oder das Projekt nicht umsetzen.
+**Beantragte Berechtigungen (so knapp wie möglich, damit die Freigabe leichtfällt):**
+
+| Berechtigung (Microsoft Graph, delegiert) | Wofür |
+|---|---|
+| `Mail.ReadWrite` | Mails lesen, Antwortentwürfe anlegen, Mails als erledigt markieren |
+| `Calendars.ReadWrite` | Termine lesen, bestätigte Termine eintragen |
+| `User.Read`, `offline_access` | Anmeldung des Vertreters, Synchronisation ohne erneute Anmeldung |
+| **nicht** `Mail.Send` | Das Tool kann keine Mail selbst versenden. |
+
+- **Delegiert statt anwendungsweit:** Der Vertreter meldet sich selbst an. Das Tool sieht damit nur, was er selbst sieht, also sein eigenes Postfach und seinen Kalender, kein anderes Postfach der SIGNAL IDUNA. Die Zustimmung erteilt die IT einmalig für diese App; sie kann sie jederzeit widerrufen.
+- **Mitzuliefern beim Antrag:** Kurzbeschreibung, Berechtigungsliste, Datenfluss (welche Daten wohin), Hosting und KI-Anbieter mit EU-Region, Löschkonzept, Auftragsverarbeitungsverträge, Ansprechpartner. Mit Sicherheitsfragebogen oder Prüfung durch die IT der SIGNAL IDUNA ist zu rechnen; das kann Wochen dauern.
+
+**Wege je nach Antwort der SIGNAL IDUNA:**
+1. **Freigabe wie beantragt:** Umsetzung wie in dieser Spec.
+2. **Freigabe mit Auflagen** (z. B. vorgegebener KI-Anbieter, Hosting, Sicherheitsprüfung): Spec anpassen, dann umsetzen.
+3. **Pilot mit der SIGNAL IDUNA:** Das Tool wird der SIGNAL IDUNA als Pilot einer Agentur angeboten und ggf. in einer von ihr vorgegebenen Umgebung betrieben.
+4. **Keine Freigabe:** Projekt in dieser Form nicht umsetzen. Umgehungen sind keine Option: Weder eine automatische Weiterleitung an ein externes Postfach noch das manuelle Hochladen von Mails ins Tool, denn beides wäre dieselbe Datenweitergabe ohne Freigabe.
 
 ## 8. KI-Modell und Datenverarbeitung
 
@@ -247,7 +266,7 @@ Dazu kommen ein Aufschlag für interne Denkschritte des Modells und für lange P
 | Backend/API | Python (FastAPI) oder Node (TypeScript) |
 | Datenbank | PostgreSQL (verwalteter Dienst in der EU-Region) |
 | Hintergrundjobs | Queue (z. B. Redis/RQ) für Sync, OCR, Analyse |
-| Mail und Kalender | Microsoft Graph (Delta-Sync, Webhooks); IMAP bzw. CalDAV als Fallback |
+| Mail und Kalender | Microsoft Graph mit delegierten Berechtigungen im Microsoft-Konto der SIGNAL IDUNA, ohne Sendeberechtigung (7.1); Delta-Sync und Benachrichtigungen bei neuen Mails |
 | KI | Claude über Vertex AI oder Bedrock in der EU-Region, strukturierte Ausgabe (JSON-Schema); siehe Abschnitt 8 |
 | Betrieb | Container beim selben Cloud-Anbieter in derselben EU-Region wie die KI; Single-Tenant je Agentur |
 
@@ -263,7 +282,7 @@ Dazu kommen ein Aufschlag für interne Denkschritte des Modells und für lange P
 ## 10. Umsetzung in Phasen
 | Phase | Inhalt | Ergebnis |
 |---|---|---|
-| 0 – Klärung und Klickdummy | Freigabe durch die SIGNAL IDUNA (7.1), Abstimmung von Layout und Begriffen anhand der Mockups | Freigabe und abgestimmtes Design |
+| 0 – Klärung und Klickdummy | Freigabeantrag an die SIGNAL IDUNA (7.1) und deren Prüfung; parallel Abstimmung von Layout und Begriffen anhand der Mockups | Freigabe und abgestimmtes Design; erst danach Start von Phase 1 |
 | 1 – MVP (ca. 7–9 Wochen) | M365-Anbindung (Mail und Kalender), Analyse, Vorgangsbildung, Priorisierung, Dashboard mit „Mein Tag“, Vorgangsansicht, Zuordnung prüfen, Rückrufe, Termine aus Mails, Termin-Briefing | produktiv für einen Nutzer |
 | 2 | Antwortentwürfe ins Postfach, Mobile/PWA-Feinschliff, Tagesbriefing, Rückrufe automatisch einplanen, Fristen im Kalender, Fahrzeiten, Innendienst-Zugang | Team-Nutzung |
 | 3 | Kundenstamm-Import, Schnittstelle zum Agentursystem der SIGNAL IDUNA (falls angeboten und freigegeben), Auswertungen | Integration |
@@ -283,10 +302,10 @@ Dazu kommen ein Aufschlag für interne Denkschritte des Modells und für lange P
 1. Welches Mailsystem wird genutzt (Microsoft 365, Exchange on-premises, anderer Anbieter)?
 2. Wie viele Mails pro Tag, und gibt es neben dem persönlichen Postfach ein Sammelpostfach (z. B. schaden@)?
 3. Welche Sparten machen den Großteil aus (Privat Kfz/Sach vs. Leben/Kranken vs. Gewerbe)?
-4. Hat die Agentur eine eigene Mail-Domain, oder läuft das Postfach über die SIGNAL IDUNA? (siehe 7.1)
+4. ~~Eigenes Postfach oder bei der SIGNAL IDUNA?~~ Geklärt: bei der SIGNAL IDUNA. Gibt es daneben weitere Postfächer der Agentur (z. B. Sammelpostfach)?
 5. Lässt sich ein Kundenstamm (Name, Mail, Telefon, Vertragsnummern) aus dem Agentursystem der SIGNAL IDUNA exportieren, und ist das erlaubt?
 6. Wird bereits Google Cloud oder AWS genutzt? Das entscheidet den Anbieter für Hosting und KI in der EU (entschieden ist: EU-Cloud).
-7. Soll die App Antworten selbst versenden oder nur Entwürfe in Outlook ablegen?
+7. Ist es in Ordnung, dass Antworten nur als Entwurf in Outlook landen und dort abgeschickt werden? (Vorschlag der Spec; erleichtert die Freigabe)
 8. Nutzt künftig auch Innendienst/Assistenz das Tool?
 9. Gibt es feste Fristen/Abläufe, die als Regeln abgebildet werden sollen (z. B. Schadenmeldung binnen 24 h an Versicherer)?
 10. Wird der Outlook-Kalender genutzt, und pflegt jemand anderes (z. B. Innendienst) Termine mit ein?
